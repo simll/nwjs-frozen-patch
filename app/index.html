@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>frozen-patch</title>
+  <script>
+    'use strict';
+
+    // main
+    let win = nw.Window.get();
+    let opened = (newWin)=>{
+      let restore = false;
+      // cancel window xp twice minimize animate
+      newWin.x = -9999;
+      newWin.y = -9999;
+      newWin.width = 0;
+      newWin.height= 0;
+      newWin.on('close', (event)=>{
+        win.show();
+        if (!restore) win.close();
+        newWin.close(true);
+      });
+      newWin.on('restore', (event)=>{
+        restore = true;
+        newWin.close();
+      });
+      // may be can do something let it better, just like newWin.enterFullscreen(), win.capturePage() for newWin
+      newWin.minimize();
+      win.hide();
+    };
+    // when the bug(#4810) was fixed, just remove that minimize event. 
+    // 'app/blank.html' is a empty file
+    win.on('minimize', ()=>nw.Window.open('app/blank.html', {title: document.title}, opened));
+
+    // other for test
+    win.enterFullscreen();
+    document.addEventListener("DOMContentLoaded", (event)=>{
+      document.querySelector('#btn-min').addEventListener('click', (event)=>{
+        win.minimize();
+      });
+      document.querySelector('#btn-close').addEventListener('click', (event)=>{
+        win.close();
+      });
+    });
+  </script>
+</head>
+<body>
+  <h1>:) Hello</h1>
+  <button type="button" id="btn-min">minimize</button>
+  <button type="button" id="btn-close">close</button>
+</body>
+</html>
